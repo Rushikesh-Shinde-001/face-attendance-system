@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Profile</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .navbar {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        .nav-links a:hover {
+            background: #34495e;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f4f4f4;
+        }
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 50px;
+        }
+        .profile-info h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .profile-info p {
+            color: #7f8c8d;
+            margin: 5px 0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .info-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .info-item label {
+            color: #7f8c8d;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .info-item .value {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .permission-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .permission-on {
+            background: #d4edda;
+            color: #155724;
+        }
+        .permission-off {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>🎓 Student Portal - {{ student.department.name }}</h2>
+        <div class="nav-links">
+            <a href="{% url 'student_dashboard' %}">Dashboard</a>
+            <a href="{% url 'my_attendance' %}">My Attendance</a>
+            <a href="{% url 'my_profile' %}">Profile</a>
+            <a href="{% url 'student_logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="profile-header">
+                <div class="profile-photo">
+                    {% if student.face_image %}
+                        <img src="{{ student.face_image.url }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                    {% else %}
+                        👤
+                    {% endif %}
+                </div>
+                <div class="profile-info">
+                    <h2>{{ student.name }}</h2>
+                    <p><strong>ID:</strong> {{ student.student_id }}</p>
+                    <p><strong>Email:</strong> {{ student.email }}</p>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Department</label>
+                    <div class="value">{{ student.department.name }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Year</label>
+                    <div class="value">{{ student.get_year_display }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Total Attendance</label>
+                    <div class="value">{{ total_attendance }} days</div>
+                </div>
+                <div class="info-item">
+                    <label>Member Since</label>
+                    <div class="value">{{ student.created_at|date:"d M Y" }}</div>
+                </div>
+            </div>
+
+            <div class="permission-status {% if student.can_mark_attendance %}permission-on{% else %}permission-off{% endif %}">
+                <strong>Attendance Permission:</strong> 
+                {% if student.can_mark_attendance %}✅ You can mark attendance{% else %}❌ Permission OFF - Contact Admin{% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

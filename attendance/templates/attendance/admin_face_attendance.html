@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Face Attendance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .navbar {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        .nav-links a:hover {
+            background: #34495e;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .btn-face {
+            background: #3498db;
+            color: white;
+            padding: 8px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .btn-face:hover {
+            background: #2980b9;
+        }
+        .badge-success {
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+        .badge-danger {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>👤 Admin Portal</h2>
+        <div class="nav-links">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <a href="{% url 'students_list' %}">Students</a>
+            <a href="{% url 'register_face' %}">Add Student</a>
+            <a href="{% url 'take_attendance' %}">Take Attendance</a>
+            <a href="{% url 'view_attendance' %}">View Attendance</a>
+            <a href="{% url 'admin_logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📸 Face Recognition Attendance</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="padding: 10px; margin-bottom: 20px; {% if message.tags == 'success' %}background:#d4edda; color:#155724{% else %}background:#f8d7da; color:#721c24{% endif %}; border-radius:5px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search student by name or ID..." onkeyup="searchStudents()">
+            </div>
+            
+            <table id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Year</th>
+                        <th>Face Image</th>
+                        <th>Today's Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.department.name }}</td>
+                        <td>{{ student.get_year_display }}</td>
+                        <td>
+                            {% if student.face_image %}
+                                <span class="badge-success">✅ Available</span>
+                            {% else %}
+                                <span class="badge-danger">❌ No Image</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.id in today_marked %}
+                                <span class="badge-success">Present ✅</span>
+                            {% else %}
+                                <span class="badge-danger">Absent ❌</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.face_image and student.id not in today_marked %}
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="student_id" value="{{ student.id }}">
+                                    <button type="submit" class="btn-face">📸 Mark with Face</button>
+                                </form>
+                            {% elif student.id in today_marked %}
+                                <span style="color:#27ae60;">Already Present</span>
+                            {% else %}
+                                <span style="color:#7f8c8d;">No face image</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function searchStudents() {
+            var input = document.getElementById('searchInput');
+            var filter = input.value.toUpperCase();
+            var table = document.getElementById('studentsTable');
+            var tr = table.getElementsByTagName('tr');
+            
+            for (var i = 1; i < tr.length; i++) {
+                var tdId = tr[i].getElementsByTagName('td')[1];
+                var tdName = tr[i].getElementsByTagName('td')[2];
+                if (tdId || tdName) {
+                    var idValue = tdId.textContent || tdId.innerText;
+                    var nameValue = tdName.textContent || tdName.innerText;
+                    if (idValue.toUpperCase().indexOf(filter) > -1 || nameValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = '';
+                    } else {
+                        tr[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
