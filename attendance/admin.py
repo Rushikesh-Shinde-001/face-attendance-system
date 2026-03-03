@@ -5,7 +5,6 @@ from .models import Department, Student, Attendance
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'code']
     search_fields = ['name', 'code']
-    list_filter = ['name']
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
