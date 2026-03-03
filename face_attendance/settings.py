@@ -62,15 +62,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'face_attendance.wsgi.application'
 
+# ✅ फक्त SQLite
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'face_attendance_db'),
-        'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'root'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+
 }
 
 AUTH_PASSWORD_VALIDATORS = [
