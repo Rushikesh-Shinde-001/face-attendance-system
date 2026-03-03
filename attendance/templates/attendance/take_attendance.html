@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Take Attendance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .navbar {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        .nav-links a:hover {
+            background: #34495e;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .option-btn {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: 0.3s;
+        }
+        .option-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        .option-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        .option-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .manual-section, .face-section {
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .btn-mark {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-mark:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .btn-face-mark {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .badge {
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>👤 Admin Portal</h2>
+        <div class="nav-links">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <a href="{% url 'students_list' %}">Students</a>
+            <a href="{% url 'register_face' %}">Add Student</a>
+            <a href="{% url 'take_attendance' %}">Take Attendance</a>
+            <a href="{% url 'view_attendance' %}">View Attendance</a>
+            <a href="{% url 'admin_logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📸 Take Attendance</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="padding: 10px; margin-bottom: 20px; {% if message.tags == 'success' %}background:#d4edda; color:#155724{% else %}background:#f8d7da; color:#721c24{% endif %}; border-radius:5px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- Mode Selection -->
+            <div class="options">
+                <a href="?mode=manual" class="option-btn {% if request.GET.mode != 'face' %}active{% endif %}">
+                    <div class="option-icon">✍️</div>
+                    <h3>Manual Attendance</h3>
+                    <p>Select student from list</p>
+                </a>
+                <a href="?mode=face" class="option-btn {% if request.GET.mode == 'face' %}active{% endif %}">
+                    <div class="option-icon">📸</div>
+                    <h3>Face Attendance</h3>
+                    <p>Use face recognition</p>
+                </a>
+            </div>
+            
+            {% if request.GET.mode == 'face' %}
+                <!-- Face Attendance Mode -->
+                <div class="face-section">
+                    <h3>Select Student for Face Recognition</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Face Image</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ student.student_id }}</td>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.department.name }}</td>
+                                <td>{{ student.get_year_display }}</td>
+                                <td>
+                                    {% if student.face_image %}
+                                        <span style="color:#27ae60;">✅ Available</span>
+                                    {% else %}
+                                        <span style="color:#e74c3c;">❌ No Image</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if student.face_image %}
+                                        <a href="{% url 'admin_face_attendance' %}?student_id={{ student.id }}" 
+                                           class="btn-face-mark">📸 Mark with Face</a>
+                                    {% else %}
+                                        <span style="color:#7f8c8d;">No face image</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <!-- Manual Attendance Mode -->
+                <div class="manual-section">
+                    <h3>Manual Attendance - {% now "d M Y" %}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ student.student_id }}</td>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.department.name }}</td>
+                                <td>{{ student.get_year_display }}</td>
+                                <td>
+                                    {% if student.id in today_marked %}
+                                        <span class="badge">Present ✅</span>
+                                    {% else %}
+                                        <span style="color:#e74c3c;">Absent ❌</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if student.id not in today_marked %}
+                                        <form method="post" style="display:inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                                            <button type="submit" class="btn-mark">Mark Present</button>
+                                        </form>
+                                    {% else %}
+                                        <button class="btn-mark" disabled>Already Marked</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

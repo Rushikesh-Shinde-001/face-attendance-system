@@ -1,0 +1,44 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Add Department{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4><i class="fas fa-building"></i> Add New Department</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'department_add' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Department Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" 
+                               placeholder="e.g., Computer Science" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Department Code <span class="text-danger">*</span></label>
+                        <input type="text" name="code" class="form-control" 
+                               placeholder="e.g., CS" required>
+                        <small class="text-muted">Short code (2-5 letters)</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'students_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus-circle"></i> Add Department
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

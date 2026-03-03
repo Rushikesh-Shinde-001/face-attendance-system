@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .navbar {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        .nav-links a:hover {
+            background: #34495e;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            font-size: 48px;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        .stat-card p {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .action-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+        .action-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .recent-table {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .badge {
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .welcome-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>👤 Admin Portal - {{ department.name|default:"Dashboard" }}</h2>
+        <div class="nav-links">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <a href="{% url 'students_list' %}">Students</a>
+            <a href="{% url 'register_face' %}">Add Student</a>
+            <a href="{% url 'take_attendance' %}">Take Attendance</a>
+            <a href="{% url 'view_attendance' %}">View Attendance</a>
+            <a href="{% url 'admin_logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Message -->
+        <div class="welcome-card">
+            <h1>Welcome, Admin!</h1>
+            <p>Manage students and attendance from here.</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>{{ total_students|default:"0" }}</h3>
+                <p>Total Students</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ today_attendance|default:"0" }}</h3>
+                <p>Today's Attendance</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ students.count|default:"0" }}</h3>
+                <p>Active Students</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <h2 style="margin-bottom: 20px;">Quick Actions</h2>
+        <div class="quick-actions">
+            <a href="{% url 'register_face' %}" class="action-btn">➕ Add Student</a>
+            <a href="{% url 'students_list' %}" class="action-btn">📋 View Students</a>
+            <a href="{% url 'take_attendance' %}" class="action-btn">📸 Take Attendance</a>
+            <a href="{% url 'view_attendance' %}" class="action-btn">📊 View Reports</a>
+        </div>
+
+        <!-- Recent Students -->
+        <div class="recent-table" style="margin-top: 30px;">
+            <h2 style="margin-bottom: 20px;">Recent Students</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Permission</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students|slice:":10" %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.department.name }}</td>
+                        <td>
+                            {% if student.can_mark_attendance %}
+                                <span class="badge" style="background: #27ae60;">ON</span>
+                            {% else %}
+                                <span class="badge" style="background: #e74c3c;">OFF</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'student_detail' student.id %}" style="color: #3498db; text-decoration: none;">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center;">No students found. 
+                        <a href="{% url 'register_face' %}" style="color: #3498db;">Add your first student</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

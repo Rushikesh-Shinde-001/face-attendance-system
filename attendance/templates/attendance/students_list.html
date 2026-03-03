@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Students List</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .navbar {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        .nav-links a:hover {
+            background: #34495e;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn-add {
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .bulk-actions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .bulk-actions h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .bulk-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-bulk {
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+        .btn-on { background: #27ae60; }
+        .btn-off { background: #e74c3c; }
+        .btn-toggle { background: #3498db; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .btn-permission {
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+        }
+        .btn-on-small { background: #27ae60; }
+        .btn-off-small { background: #e74c3c; }
+        .btn-view {
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>👤 Admin Portal</h2>
+        <div class="nav-links">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <a href="{% url 'students_list' %}">Students</a>
+            <a href="{% url 'register_face' %}">Add Student</a>
+            <a href="{% url 'take_attendance' %}">Take Attendance</a>
+            <a href="{% url 'view_attendance' %}">View Attendance</a>
+            <a href="{% url 'admin_logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h2>📋 Students List ({{ students.count }})</h2>
+                <a href="{% url 'register_face' %}" class="btn-add">+ Add New Student</a>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="padding: 10px; margin-bottom: 20px; background: #d4edda; color: #155724; border-radius: 5px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- BULK PERMISSION BUTTONS - नवीन -->
+            <div class="bulk-actions">
+                <h3>⚡ Bulk Permission Controls</h3>
+                <div class="bulk-buttons">
+                    <a href="{% url 'bulk_permission_on' %}" class="btn-bulk btn-on" 
+                       onclick="return confirm('All students ची permission ON करायची?')">
+                       ✅ सगळ्यांना Permission ON
+                    </a>
+                    <a href="{% url 'bulk_permission_off' %}" class="btn-bulk btn-off" 
+                       onclick="return confirm('All students ची permission OFF करायची?')">
+                       ❌ सगळ्यांना Permission OFF
+                    </a>
+                    <a href="{% url 'bulk_permission_toggle' %}" class="btn-bulk btn-toggle" 
+                       onclick="return confirm('All students ची permission टॉगल (ON⇄OFF) करायची?')">
+                       🔄 सगळ्यांची Permission टॉगल
+                    </a>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Year</th>
+                        <th>Permission</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.department.name }}</td>
+                        <td>{{ student.get_year_display }}</td>
+                        <td>
+                            <a href="{% url 'toggle_permission' student.id %}" 
+                               class="btn-permission {% if student.can_mark_attendance %}btn-on-small{% else %}btn-off-small{% endif %}">
+                                {% if student.can_mark_attendance %}ON{% else %}OFF{% endif %}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'student_detail' student.id %}" class="btn-view">View</a>
+                            <a href="{% url 'student_delete' student.id %}" class="btn-delete" 
+                               onclick="return confirm('Delete {{ student.name }}?')">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center;">No students found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

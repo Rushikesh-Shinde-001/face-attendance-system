@@ -1,0 +1,76 @@
+python manage.py makemigrations
+python manage.py migrate
+
+python manage.py createsuperuser
+
+venv\Scripts\activate
+ 
+python manage.py shell
+
+python manage.py runserver
+
+
+............................आता MySQL मध्ये Data पहा....................
+-- Database select करा
+USE face_attendance_db;
+
+-- Departments पहा
+SELECT * FROM attendance_department;
+
+-- Students पहा
+SELECT id, student_id, name, email, department_id, year, can_mark_attendance FROM attendance_student;
+
+-- Attendance पहा
+SELECT * FROM attendance_attendance;
+
+-- Join करून सगळं एकत्र पहा
+SELECT 
+    s.student_id,
+    s.name,
+    s.email,
+    d.code as department,
+    s.year,
+    s.can_mark_attendance as permission,
+    a.date,
+    a.time
+FROM attendance_student s
+LEFT JOIN attendance_department d ON s.department_id = d.id
+LEFT JOIN attendance_attendance a ON s.id = a.student_id
+ORDER BY a.date DESC;
+
+-- Exit
+EXIT;
+
+
+
+...............................Quick MySQL Commands (Copy-Paste):.................
+
+-- Database वापरा
+USE face_attendance_db;
+
+-- सगळ्या tables ची यादी
+SHOW TABLES;
+
+-- Departments
+SELECT * FROM attendance_department;
+
+-- Students
+SELECT * FROM attendance_student;
+
+-- Attendance
+SELECT * FROM attendance_attendance;
+
+-- Counts
+SELECT 'Students' as type, COUNT(*) as count FROM attendance_student
+UNION ALL
+SELECT 'Attendance', COUNT(*) FROM attendance_attendance
+UNION ALL
+SELECT 'Departments', COUNT(*) FROM attendance_department;
+
+-- Today's attendance
+SELECT * FROM attendance_attendance WHERE date = CURDATE();
+
+-- Students with permission ON
+SELECT student_id, name, email FROM attendance_student WHERE can_mark_attendance = 1;
+
+

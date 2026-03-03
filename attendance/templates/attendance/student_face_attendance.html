@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Face Attendance</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+      }
+      .navbar {
+        background: #2c3e50;
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .nav-links a {
+        color: white;
+        text-decoration: none;
+        margin-left: 20px;
+        padding: 8px 15px;
+        border-radius: 5px;
+      }
+      .nav-links a:hover {
+        background: #34495e;
+      }
+      .container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        text-align: center;
+      }
+      .camera-icon {
+        font-size: 80px;
+        color: #3498db;
+        margin-bottom: 20px;
+      }
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+      }
+      .student-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .student-info p {
+        margin: 5px 0;
+        color: #555;
+      }
+      .timer-badge {
+        background: #3498db;
+        color: white;
+        padding: 15px;
+        border-radius: 50px;
+        margin: 20px 0;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .security-badge {
+        background: #27ae60;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .instructions {
+        background: #e8f4f8;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        text-align: left;
+      }
+      .instructions h3 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+      .instructions li {
+        margin: 10px 0;
+        color: #555;
+        list-style-type: none;
+        padding-left: 25px;
+        position: relative;
+      }
+      .instructions li:before {
+        content: "👉";
+        position: absolute;
+        left: 0;
+        color: #3498db;
+      }
+      .feature-list {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+      }
+      .feature-item {
+        text-align: center;
+      }
+      .feature-icon {
+        font-size: 30px;
+        color: #27ae60;
+      }
+      .btn-start {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 5px;
+        font-size: 18px;
+        cursor: pointer;
+        margin: 20px 0;
+        transition: 0.3s;
+      }
+      .btn-start:hover {
+        background: #219a52;
+        transform: scale(1.05);
+      }
+      .btn-back {
+        display: inline-block;
+        background: #95a5a6;
+        color: white;
+        text-decoration: none;
+        padding: 10px 30px;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .message {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <h2>🎓 Student Portal - {{ student.department.name }}</h2>
+      <div class="nav-links">
+        <a href="{% url 'student_dashboard' %}">Dashboard</a>
+        <a href="{% url 'my_attendance' %}">My Attendance</a>
+        <a href="{% url 'my_profile' %}">Profile</a>
+        <a href="{% url 'student_logout' %}">Logout</a>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <div class="camera-icon">📸</div>
+        <h2>Face Recognition Attendance</h2>
+
+        {% if messages %} {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %} {% endif %}
+
+        <div class="student-info">
+          <p><strong>Name:</strong> {{ student.name }}</p>
+          <p><strong>ID:</strong> {{ student.student_id }}</p>
+          <p><strong>Email:</strong> {{ student.email }}</p>
+          <p><strong>Date:</strong> {% now "d M Y" %}</p>
+        </div>
+
+        <!-- Timer Badge - नवीन -->
+        <div class="timer-badge">⏱️ 2 MINUTE AUTO CAPTURE</div>
+
+        <div class="security-badge">🔒 Secure Face Recognition System</div>
+
+        <!-- Feature List - नवीन -->
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">📷</div>
+            <div>Auto Capture</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⏱️</div>
+            <div>2 Minute Timer</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🔒</div>
+            <div>Secure</div>
+          </div>
+        </div>
+
+        <div class="instructions">
+          <h3>📋 Instructions:</h3>
+          <ul>
+            <li>Click "Start Camera" button below</li>
+            <li>
+              Camera will run for <strong>2 minutes automatically</strong>
+            </li>
+            <li>Look directly at the camera</li>
+            <li>Make sure you are in a well-lit area</li>
+            <li>Remove glasses or sunglasses if possible</li>
+            <li>Face will be detected automatically</li>
+            <li>Press <strong>ESC</strong> key to cancel</li>
+          </ul>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn-start">
+            📸 Start Camera (2 min)
+          </button>
+        </form>
+
+        <div style="margin-top: 20px">
+          <a href="{% url 'mark_attendance' %}" class="btn-back"
+            >← Back to Attendance Options</a
+          >
+        </div>
+
+        <!-- Note - नवीन -->
+        <div style="margin-top: 30px; font-size: 14px; color: #7f8c8d">
+          <p>
+            Note: Camera will automatically capture your face for 2 minutes. You
+            don't need to press any button.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
