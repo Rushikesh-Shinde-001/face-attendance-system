@@ -158,7 +158,7 @@ def student_face_attendance(request):
             
             # 5 second timer
             start_time = time.time()
-            duration = 5  # फक्त 5 सेकंद
+            duration = 5
             recognized = False
             
             messages.info(request, '📸 Camera will run for 5 seconds... Look at camera!')
@@ -196,7 +196,7 @@ def student_face_attendance(request):
                         cv2.putText(frame, "✅ ATTENDANCE MARKED!", (100, 200),
                                   cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                         cv2.imshow('Face Attendance', frame)
-                        cv2.waitKey(2000)  # 2 second pause
+                        cv2.waitKey(2000)
                         break
                 
                 # Display timer and instructions
@@ -214,7 +214,7 @@ def student_face_attendance(request):
                 if recognized:
                     break
                     
-                if cv2.waitKey(1) & 0xFF == 27:  # ESC to cancel
+                if cv2.waitKey(1) & 0xFF == 27:
                     break
             
             video.release()
@@ -308,11 +308,13 @@ def admin_dashboard(request):
     students = Student.objects.all().order_by('-created_at')
     total_students = students.count()
     today_attendance = Attendance.objects.filter(date=date.today()).count()
+    departments = Department.objects.all()
     
     context = {
         'students': students,
         'total_students': total_students,
         'today_attendance': today_attendance,
+        'departments': departments,
     }
     return render(request, 'attendance/admin_dashboard.html', context)
 
@@ -331,7 +333,7 @@ def students_list(request):
 
 
 def register_face(request):
-    """Admin नवीन student add करतो - फक्त CS साठी"""
+    """Admin नवीन student add करतो"""
     if not request.session.get('is_admin'):
         return redirect('admin_login')
     
@@ -373,8 +375,8 @@ def register_face(request):
         messages.success(request, f'Student {name} added successfully!')
         return redirect('students_list')
     
-    # GET request - फक्त CS department दाखवा
-    departments = Department.objects.filter(code='CS')
+    # GET request - सगळे departments दाखवा
+    departments = Department.objects.all()
     years = ['FY', 'SY', 'TY']
     
     context = {
@@ -429,6 +431,140 @@ def toggle_permission(request, student_id):
     messages.success(request, f'✅ Permission for {student.name} is now {status}')
     
     return redirect('students_list')
+
+
+# ==================== DEPARTMENT MANAGEMENT (COMPLETE CRUD) ====================
+
+def department_list(request):
+    """Admin सगळे departments बघतो"""
+    # Check if admin is logged in
+    if not request.session.get('is_admin'):
+        messages.error(request, 'Please login as admin first')
+        return redirect('admin_login')
+    
+    # Get all departments ordered by name
+    departments = Department.objects.all().order_by('name')
+    
+    # Add student count for each department
+    for dept in departments:
+        dept.student_count = Student.objects.filter(department=dept).count()
+    
+    context = {
+        'departments': departments,
+    }
+    return render(request, 'attendance/department_list.html', context)
+
+
+def add_department(request):
+    """Admin नवीन department add करतो"""
+    # Check if admin is logged in
+    if not request.session.get('is_admin'):
+        messages.error(request, 'Please login as admin first')
+        return redirect('admin_login')
+    
+    if request.method == 'POST':
+        # Get form data
+        name = request.POST.get('name')
+        code = request.POST.get('code')
+        
+        # Validation
+        if not name or not code:
+            messages.error(request, 'Please fill all fields')
+            return redirect('add_department')
+        
+        # Check if department with this code already exists
+        if Department.objects.filter(code=code).exists():
+            messages.error(request, f'Department with code {code} already exists')
+            return redirect('add_department')
+        
+        # Check if department with this name already exists
+        if Department.objects.filter(name=name).exists():
+            messages.error(request, f'Department with name {name} already exists')
+            return redirect('add_department')
+        
+        # Create department
+        Department.objects.create(name=name, code=code)
+        messages.success(request, f'✅ Department {name} ({code}) added successfully!')
+        return redirect('department_list')
+    
+    # GET request - show form
+    return render(request, 'attendance/add_department.html')
+
+
+def edit_department(request, dept_id):
+    """Admin department edit करतो"""
+    # Check if admin is logged in
+    if not request.session.get('is_admin'):
+        messages.error(request, 'Please login as admin first')
+        return redirect('admin_login')
+    
+    # Get department or return 404
+    department = get_object_or_404(Department, id=dept_id)
+    
+    if request.method == 'POST':
+        # Get form data
+        name = request.POST.get('name')
+        code = request.POST.get('code')
+        
+        # Validation
+        if not name or not code:
+            messages.error(request, 'Please fill all fields')
+            return redirect('edit_department', dept_id=dept_id)
+        
+        # Check if another department with same code exists
+        if Department.objects.filter(code=code).exclude(id=dept_id).exists():
+            messages.error(request, f'Another department with code {code} already exists')
+            return redirect('edit_department', dept_id=dept_id)
+        
+        # Check if another department with same name exists
+        if Department.objects.filter(name=name).exclude(id=dept_id).exists():
+            messages.error(request, f'Another department with name {name} already exists')
+            return redirect('edit_department', dept_id=dept_id)
+        
+        # Update department
+        department.name = name
+        department.code = code
+        department.save()
+        
+        messages.success(request, f'✅ Department updated successfully!')
+        return redirect('department_list')
+    
+    context = {
+        'department': department,
+    }
+    return render(request, 'attendance/edit_department.html', context)
+
+
+def delete_department(request, dept_id):
+    """Admin department delete करतो"""
+    # Check if admin is logged in
+    if not request.session.get('is_admin'):
+        messages.error(request, 'Please login as admin first')
+        return redirect('admin_login')
+    
+    # Get department or return 404
+    department = get_object_or_404(Department, id=dept_id)
+    
+    # Check how many students are in this department
+    students_count = Student.objects.filter(department=department).count()
+    
+    if request.method == 'POST':
+        # If department has students, don't delete
+        if students_count > 0:
+            messages.error(request, f'Cannot delete {department.name} because it has {students_count} students')
+            return redirect('department_list')
+        
+        # Delete department
+        department_name = department.name
+        department.delete()
+        messages.success(request, f'✅ Department {department_name} deleted successfully!')
+        return redirect('department_list')
+    
+    context = {
+        'department': department,
+        'students_count': students_count,
+    }
+    return render(request, 'attendance/delete_department.html', context)
 
 
 # ==================== ADMIN FACE ATTENDANCE ====================
