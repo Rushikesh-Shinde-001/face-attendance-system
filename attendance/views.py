@@ -375,7 +375,12 @@ def register_face(request):
         messages.success(request, f'Student {name} added successfully!')
         return redirect('students_list')
     
+    # ===== FIX: Auto-create default department if none exists =====
     # GET request - सगळे departments दाखवा
+    if Department.objects.count() == 0:
+        dept = Department.objects.create(name='BSC Computer Science', code='BSC-CS')
+        print(f"✅ Default department created: {dept.name}")
+    
     departments = Department.objects.all()
     years = ['FY', 'SY', 'TY']
     
