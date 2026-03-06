@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Student - CS Department</title>
+    <title>Add New Student</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -58,10 +58,9 @@
             border-radius: 5px;
             font-size: 16px;
         }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 5px rgba(52,152,219,0.3);
+        .required:after {
+            content: " *";
+            color: red;
         }
         button {
             background: #27ae60;
@@ -72,8 +71,7 @@
             font-size: 16px;
             cursor: pointer;
             width: 100%;
-            font-weight: bold;
-            transition: 0.3s;
+            margin-top: 20px;
         }
         button:hover {
             background: #219a52;
@@ -83,52 +81,21 @@
             margin-bottom: 20px;
             border-radius: 5px;
         }
-        .success { 
-            background: #d4edda; 
-            color: #155724; 
-            border: 1px solid #c3e6cb;
-        }
-        .error { 
-            background: #f8d7da; 
-            color: #721c24; 
-            border: 1px solid #f5c6cb;
-        }
-        .info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
         .btn-back {
             display: inline-block;
-            background: #95a5a6;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 15px;
-            text-align: center;
-        }
-        .btn-back:hover {
-            background: #7f8c8d;
-        }
-        .footer {
             margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
             text-align: center;
-        }
-        .department-badge {
-            background: #3498db;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            display: inline-block;
-            margin-bottom: 15px;
+            width: 100%;
         }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h2>👤 Admin Portal - CS Department</h2>
+        <h2>👤 Admin Portal</h2>
         <div class="nav-links">
             <a href="{% url 'admin_dashboard' %}">Dashboard</a>
             <a href="{% url 'students_list' %}">Students</a>
@@ -141,10 +108,6 @@
 
     <div class="container">
         <div class="card">
-            <div class="department-badge">
-                📚 Computer Science Department
-            </div>
-            
             <h2>➕ Add New Student</h2>
             
             {% if messages %}
@@ -159,35 +122,32 @@
                 {% csrf_token %}
                 
                 <div class="form-group">
-                    <label>Student ID</label>
+                    <label class="required">Student ID</label>
                     <input type="text" name="student_id" required>
                 </div>
                 
                 <div class="form-group">
-                    <label>Full Name</label>
+                    <label class="required">Full Name</label>
                     <input type="text" name="name" required>
                 </div>
                 
                 <div class="form-group">
-                    <label>Email</label>
+                    <label class="required">Email</label>
                     <input type="email" name="email" required>
                 </div>
                 
-                <!-- Department - फक्त CS दाखवेल -->
                 <div class="form-group">
-                    <label>Department</label>
+                    <label class="required">Department</label>
                     <select name="department_id" required>
+                        <option value="">Select Department</option>
                         {% for dept in departments %}
-                        <option value="{{ dept.id }}" selected>
-                            {{ dept.name }} ({{ dept.code }})
-                        </option>
+                        <option value="{{ dept.id }}">{{ dept.name }} ({{ dept.code }})</option>
                         {% endfor %}
                     </select>
                 </div>
                 
-                <!-- Year - फक्त FY, SY, TY -->
                 <div class="form-group">
-                    <label>Year</label>
+                    <label class="required">Year</label>
                     <select name="year" required>
                         <option value="">Select Year</option>
                         {% for year in years %}
@@ -197,16 +157,14 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Face Image (Optional)</label>
+                    <label>Face Image</label>
                     <input type="file" name="face_image" accept="image/*">
                 </div>
                 
                 <button type="submit">Add Student</button>
             </form>
             
-            <div class="footer">
-                <a href="{% url 'students_list' %}" class="btn-back">← Back to Students List</a>
-            </div>
+            <a href="{% url 'students_list' %}" class="btn-back">← Back to Students List</a>
         </div>
     </div>
 </body>
